@@ -1,0 +1,52 @@
+@page "/Room"
+@using BlazorServerApp.Data
+@inject Service service
+@inject NavigationManager NavigateTo
+
+<PageTitle>Customer</PageTitle>
+
+<h1>Customers</h1>
+<p> Select what you want to do in the drop</p>
+
+<select id="condition" @onclick="@Hide" @bind="@SelectedOpt">
+    <option value="0">Add a room</option>
+    <option value="1">view all rooms</option>
+</select>
+
+
+<font size="1">
+@((MarkupString) output)
+</font>
+
+
+
+@code {
+    
+    public string SelectedOpt { get; set; } = "";
+    public string output {get; set;} = "";
+    
+    
+    private void Hide()
+    {
+        if (SelectedOpt=="0")
+        {
+             //<p>Find a Customers</p>
+            NavigateTo.NavigateTo("AddRoom");
+            //output = CustomerMethods.FindCustomer(Service.customers, cid);
+
+            // Call for find Customer
+
+            
+        }
+        else if(SelectedOpt=="1")
+        {
+            //<p>Add a Customers</p>
+            //output = "";
+            // NavigateTo.NavigateTo("Viewrooms");
+            output = RoomMethods.PrintRooms(Service.rooms);
+
+            // Call for add a Customer
+           
+        }
+    }
+}

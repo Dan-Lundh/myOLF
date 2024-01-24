@@ -1,0 +1,118 @@
+@page "/Order"
+@using BlazorServerApp.Data
+@using System.IO
+@inject Service service
+@inject NavigationManager NavigateTo
+
+@if (!string.IsNullOrWhiteSpace(Label))
+    {
+        <label for="@Id">@Label</label>
+    }
+<p>Enter Customer name</p>
+<div class="input-group mb-3 " >
+        <input type="text" class="form-control textbox-parameters" id="@Id" value="@name" @onchange="this.OnChange" size="50">
+    </div>
+    @((MarkupString)houtput)
+
+<p>Selected</p>
+
+<select @bind="selectedPersonId" @onclick="@Hide2">
+    <option value="">Select a Customer</option>
+    @foreach (var person in myCust)
+    {
+        <option value="@person.customerid"> adress: @person.adress phone: @person.phone  Cid: @person.customerid</option>
+    }
+</select>
+
+@code{
+    public string name {set;get;} ="";
+    string LastSubmitResult ="";
+
+    public string SelectedOpt { get; set; } = "";
+    string cider;
+
+    string selectout {set; get;} ="";
+
+    static int selectedPersonId { get; set; }
+
+    static int selectedorderId { get; set; }
+    static int orderrowId { get; set; }
+
+
+       
+    static string houtput {set; get;} ="";
+
+    static string houtput2 {set; get;} ="";
+
+    [Parameter] public string Value {get;set;} = "";
+    [Parameter] public EventCallback<string> ValueChanged {get;set;}
+
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public string? Id { get; set; }
+
+    public List<Customer> myCust = new List<Customer>();
+
+    public List<Orders> myOrder = new List<Orders>();
+
+    public List<Orderrowstwo> myOrderrows = new List<Orderrowstwo>();
+
+    
+
+    
+  void ValidFormSubmitted(EditContext editContext)
+  {
+    LastSubmitResult = "OnValidSubmit was executed";
+  }
+
+  void InvalidFormSubmitted(EditContext editContext)
+  {
+    LastSubmitResult = "OnInvalidSubmit was executed";
+  }
+  
+  private void OnChange(ChangeEventArgs e)
+    {
+        ValueChanged.InvokeAsync(e.Value.ToString());
+        cider= e.Value.ToString()+"";
+        houtput = "";
+        houtput2 = "";
+        
+        // calls DB and search for the names
+        myCust=Dbmethods.FindCust(cider); // myCust contains a list of all customers matching search box
+        houtput+= "<br>Customers matching " +myCust.Count() +"<br>";
+       
+        
+        
+    }
+    
+    private void Hide2() 
+    {
+        if (selectedPersonId > 0) 
+        {
+            // myOrders conatin a list of selected customer orders (selectedPersonID is customer id)
+            myOrder =Dbmethods.MyOrders(selectedPersonId); 
+        }
+        else 
+        {
+            houtput2 = "";
+        }
+        
+    }
+
+    private void Hide3()
+    {
+        if (selectedorderId >0)
+        {
+            //myOrderrows contenin ordered items for a selected customer and order
+
+            myOrderrows = Dbmethods.MyOrderrows(selectedorderId); 
+           
+        }
+        else 
+        {
+            houtput2 = "";
+        }
+
+    }
+
+    
+}
