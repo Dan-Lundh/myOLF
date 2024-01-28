@@ -24,6 +24,41 @@
     }
 </select>
 
+<h3>Product for Sale</h3>
+
+@foreach (var product in myoffer)
+{
+    // combo.prodid, products.name, products.price, combo.color, combo.size
+    <div class="card w-25">
+        <div class="card-body">
+            <h5 class="card-title">@product.name</h5>
+            <p class="card-text">@product.color availible sizes: @product.size.ToUpper().Replace(';',',')</p>
+            <blockquote class="card-text">$@product.price</blockquote>
+            <select @bind="selectedSizes[product.prodid]" @onclick="@(() => Hide3(product.prodid))">
+                 @*  *@
+                <option value="">Select Size</option>
+                @foreach (string q in product.size.Split(';'))
+                {
+                    <option value="@q"> Size: @q.ToUpper()</option>
+                }
+            </select>
+            <select @bind="numberOf[product.prodid]" @onclick="@(() => Hide3(product.prodid))">
+                <option value="">  </option>
+                @for (int i=1; i<10; i++)
+                {
+                    <option value="@i"> @i</option>
+                }
+
+            </select>
+            
+            <button @onclick="@(() => Hide4(product.prodid, product.color))">Buy</button>
+            
+
+        </div>
+    </div>
+}
+
+
 @code{
     public string name {set;get;} ="";
     string LastSubmitResult ="";
@@ -35,14 +70,26 @@
 
     static int selectedPersonId { get; set; }
 
+    static int quantity { get; set; }
+
     static int selectedorderId { get; set; }
-    static int orderrowId { get; set; }
+
+    //static string selectedSize {get;set;}
+
+    private Dictionary<int, string> selectedSizes = new Dictionary<int, string>();
+    
+    private Dictionary<int, int> numberOf = new Dictionary<int,int>();
+
+    static int rowId { get; set; }
 
 
-       
     static string houtput {set; get;} ="";
 
     static string houtput2 {set; get;} ="";
+
+    static List<Orderrows> mybuy =  new List<Orderrows>();
+    
+    static Orders myorder = new Orders();
 
     [Parameter] public string Value {get;set;} = "";
     [Parameter] public EventCallback<string> ValueChanged {get;set;}
@@ -56,9 +103,20 @@
 
     public List<Orderrowstwo> myOrderrows = new List<Orderrowstwo>();
 
+    public List<Offer> myoffer = new List<Offer>();
+
+    public List<TmpClass> sizelist = new List<TmpClass>();
     
 
-    
+
+    string [] Sizelist(string insize)
+    {
+        return insize.Split(';');
+    }
+
+    private string sizer;
+
+
   void ValidFormSubmitted(EditContext editContext)
   {
     LastSubmitResult = "OnValidSubmit was executed";
@@ -68,51 +126,94 @@
   {
     LastSubmitResult = "OnInvalidSubmit was executed";
   }
-  
+
   private void OnChange(ChangeEventArgs e)
     {
         ValueChanged.InvokeAsync(e.Value.ToString());
         cider= e.Value.ToString()+"";
         houtput = "";
         houtput2 = "";
-        
+
         // calls DB and search for the names
         myCust=Dbmethods.FindCust(cider); // myCust contains a list of all customers matching search box
         houtput+= "<br>Customers matching " +myCust.Count() +"<br>";
-       
-        
-        
+
+
+
     }
-    
-    private void Hide2() 
+
+    private void Hide2()
     {
-        if (selectedPersonId > 0) 
+        if (selectedPersonId > 0)
         {
             // myOrders conatin a list of selected customer orders (selectedPersonID is customer id)
-            myOrder =Dbmethods.MyOrders(selectedPersonId); 
-        }
-        else 
-        {
-            houtput2 = "";
-        }
+            // myOrder =Dbmethods.MyOrders(selectedPersonId);
+            myoffer=Dbmethods.OfferProducts();
         
-    }
 
-    private void Hide3()
-    {
-        if (selectedorderId >0)
-        {
-            //myOrderrows contenin ordered items for a selected customer and order
+            // initialize selected sizes - fix for not all sizes to change simultaneously. 
+            
+            foreach (var product in myoffer)
+            {
+                selectedSizes[product.prodid] = ""; // Set to an initial value if needed
+                numberOf[product.prodid]=0;
+            }
 
-            myOrderrows = Dbmethods.MyOrderrows(selectedorderId); 
-           
+            // initialize a list of products that costumer wants to buy
+
+            myorder.customerid=selectedPersonId;
+            myorder.status=Ostat.recieved;
+            
+
         }
-        else 
+        else
         {
             houtput2 = "";
         }
 
     }
 
+    protected override void OnInitialized()
+    {
+       
+       
+    }
     
+    protected void Hide3(int prodid)
+    {
+        //Just logics for getting the size into the dictionary
+
+        if (selectedSizes[prodid] !="")
+        { 
+        }
+        else
+        {
+        }
+    }
+
+    protected void Hide4(int prodid, string color)
+    {
+
+        if (selectedSizes[prodid] !="")
+        {
+            //logics associaded with the buy button 
+
+           houtput2="<br> selected size" +selectedSizes[prodid] +"<br>";
+
+           Orderrows myitem = new Orderrows();
+           myitem.size=selectedSizes[prodid];
+           myitem.quantity=numberOf[prodid];
+           myitem.productid=prodid;
+           myitem.color=color;
+
+           mybuy.Add(myitem);
+
+        }
+        else
+        {
+            houtput2 = "";
+        }
+    }
+
+
 }

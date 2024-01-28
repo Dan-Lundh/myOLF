@@ -52,4 +52,17 @@ public class Dbmethods
 
     //SELECT products.name, inhouse.color, inhouse.size, products.price, orderrows.price, inhouse.shelfsid, inhouse.shellnr, inhouse.slot,inhouse.quantity FROM orderrows INNER JOIN products ON orderrows.productid=products.id INNER JOIN combo ON combo.prodid=orderrows.productid AND combo.color=orderrows.color AND combo.size=orderrows.size INNER JOIN inhouse ON combo.prodid=inhouse.prodid AND combo.color=inhouse.color AND combo.size=inhouse.size; 
 
+
+    static public List<Offer> OfferProducts()
+    {
+        var sql="SELECT combo.prodid, products.name, products.price, combo.color, GROUP_CONCAT(combo.size SEPARATOR ';') AS size FROM products INNER JOIN combo ON products.id=combo.prodid GROUP BY combo.color; ";
+        var offered = db.Query<Offer>(sql).ToList();
+        return offered;
+    }
+
+
+
+
+
+
 }

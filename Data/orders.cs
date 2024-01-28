@@ -6,7 +6,7 @@ namespace BlazorServerApp.Data;
 public class Orders
 {
     public int id {set; get;} // order id
-    public string customerid {set;get;} // customer id
+    public int customerid {set;get;} // customer id
     public DateTime odate {set;get;} // date and time
 
     public Ostat status; // enum('recieved','split delivery','deliver one go','invoice sent','delivered')
@@ -28,7 +28,7 @@ public enum Ostat
 
 public class Orderrows
 {
-    // `id`, `ordernr`, `productid`, `quantity`, `price`, `delivquant`
+    // `id`, `ordernr (FK order)`, `productid`, 'color', 'size', `quantity`, `price`, `delivquant`
 
     public int id {set; get;}
     public int ordernr {set;get;}
@@ -75,4 +75,18 @@ public enum Inhousstatus
     None,
     Product_failure,
     Returned
+}
+
+
+public class Offer {
+    public int prodid {set;get;} 
+    public string name {set;get;} 
+    public float price {set;get;} 
+    public string color {set;get;}
+    public string size {set;get;}  
+}
+
+public class TmpClass {
+    public int Id {get;set;}
+    public string size {get;set;}
 }
