@@ -64,7 +64,7 @@ The list of the following products should be distributed for delivery:
         string size="";
 
         
-        string[] theids = selectedItemId.Split('-');
+        string[] theids = selectedItemId.Split('_');
         if (theids.Count()==3)
         {
             id=int.Parse(theids[0]);
@@ -78,7 +78,7 @@ The list of the following products should be distributed for delivery:
     public string GetUniqueIdentifier(int id, string c, string s)
     {
         // Use a property or a combination of properties to create a unique identifier
-        return $"{id}-{c}-{s}";
+        return $"{id}_{c}_{s}";
     }
 
 }
