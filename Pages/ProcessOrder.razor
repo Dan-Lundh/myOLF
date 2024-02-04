@@ -1,0 +1,84 @@
+@page "/ProcessOrder"
+@using BlazorServerApp.Data
+@inject Service service
+@inject NavigationManager NavigateTo
+@using System.IO
+@using Blazored.Modal.Services
+@inject IModalService ModalService
+@inject IModalService modal  
+
+
+<PageTitle>Stock</PageTitle>
+
+<h1>Processing undelivered/ orders</h1>
+<p> Select what you want to do in the drop</p>
+
+<select @bind="selectedOrder" @onclick="@getOrderdetails">
+    <option value="">select an order to process</option>
+    @foreach (var item in unprocessedOrders)
+    {
+        <option value="@item.id"> Order number: @item.id Customer id: @item.customerid order date: @item.odate order status:@item.status</option>
+    }
+</select>
+<br>
+<br>
+The list of the following products should be distributed for delivery:
+<br>
+<br>
+<select @bind="selectedItemId" @onclick="@getStockdetails">
+    <option value="">select item process</option>
+     @foreach (var a in theOrderrows)
+    {
+        <option value="@GetUniqueIdentifier(a.id, a.color, a.size)"> @GetUniqueIdentifier(a.id,a.color,a.size) @a.id @a.quantity of @a.name color: @a.color size: @a.size.ToUpper()  </option>
+    }
+</select>
+
+<ul>
+ @foreach (var a in stocklist)
+    {
+        <li> @a.productid  @a.name color: @a.color size: @a.size.ToUpper()  place -shelf: @a.shellnr slot: @a.slot in stock: @a.stockquant ordered: @a.orderquant </li>
+    }
+</ul>
+
+@code{
+
+    static int selectedOrder;
+
+    private string selectedItemId;
+
+    public static List<Orders> unprocessedOrders = Dbmethods.ProcessMyOrders();
+    
+    public static List<Orderrowstwo> theOrderrows = new List<Orderrowstwo>();
+
+    public static List<ReportStock> stocklist = new List<ReportStock>();
+
+    private void getOrderdetails()
+    {
+        theOrderrows =Dbmethods.MyOrderrows(selectedOrder);
+    }
+    
+    private void getStockdetails()
+    {
+        int id;
+        string color="";
+        string size="";
+
+        
+        string[] theids = selectedItemId.Split('-');
+        if (theids.Count()==3)
+        {
+            id=int.Parse(theids[0]);
+            color=theids[1];
+            size=theids[2];
+            stocklist=Dbmethods.StockItems(selectedOrder, id, color, size);
+        }
+
+    }
+
+    public string GetUniqueIdentifier(int id, string c, string s)
+    {
+        // Use a property or a combination of properties to create a unique identifier
+        return $"{id}-{c}-{s}";
+    }
+
+}

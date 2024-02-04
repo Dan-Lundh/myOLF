@@ -1,0 +1,54 @@
+@page "/exitpay"
+@using BlazorServerApp.Data
+@using System.IO
+@using Blazored.Modal.Services
+@inject Service service
+@inject NavigationManager NavigateTo
+@inject IModalService ModalService
+@inject IModalService modal  
+
+<h2>Finialize your order</h2>
+<p>Customer: @Service.currentCustomer.name, <br>Adress: @Service.currentCustomer.adress,<br> 
+<br>Phone: @Service.currentCustomer.phone <br>Email: @Service.currentCustomer.email</p>
+<br>
+<h4>Order information</h4>
+@foreach (Orderrows a in Service.myOrderrows)
+    {
+        <ul>
+            <li>@a.productid  color: @a.color  size: @a.size.ToUpper() quantity: @a.quantity price/item: @a.price  </li>
+        </ul>
+    }
+<hr>
+<br>
+The total sum for this order is: @Calc().
+<br>
+<hr>
+<br>
+<button @onclick="Accept" class="btn btn-primary">Accept</button>
+<button @onclick="Cancel" class="btn btn-primary">Cancel</button>
+@code
+{
+    public float sumer;
+
+    private float Calc()
+    {
+        return Service.myOrderrows.Sum(p => p.quantity * p.price);
+    }
+    
+    void Accept()
+    {
+        // store order in DB
+        Dbmethods.NewOrder(Service.currentCustomer.customerid, Ostat.recieved);
+        NavigateTo.NavigateTo("/");
+
+    }
+
+    void Cancel()
+    {
+        // Empty the orderrow basket.
+        Service.myOrderrows.Clear();
+        NavigateTo.NavigateTo("/");
+    }
+
+
+}

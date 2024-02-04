@@ -1,9 +1,13 @@
 @page "/Order"
 @using BlazorServerApp.Data
 @using System.IO
+@using Blazored.Modal.Services
 @inject Service service
 @inject NavigationManager NavigateTo
+@inject IModalService ModalService
+@inject IModalService modal  
 
+        
 @if (!string.IsNullOrWhiteSpace(Label))
     {
         <label for="@Id">@Label</label>
@@ -23,6 +27,8 @@
         <option value="@person.customerid"> adress: @person.adress phone: @person.phone  Cid: @person.customerid</option>
     }
 </select>
+
+ @((MarkupString)houtput2)
 
 <h3>Product for Sale</h3>
 
@@ -58,13 +64,38 @@
     </div>
 }
 
+ 
+<hr class="mb-5" />
+<br>
 
-@code{
+<button @onclick="ShowModal" class="btn btn-primary">Shoping basket</button>
+
+@code {
+ [CascadingParameter] public IModalService Modal { get; set; } = default!;
+ 
+    string outputt;
+   async Task ShowModal()
+    {
+        var gresult = Modal.Show<YourModalComponent>("Shoping basket");
+        
+        var results = await gresult.Result;
+        if (!results.Cancelled)
+            outputt="not canceled";
+        else
+            outputt="cancelled";
+    }
+   
+
+    //void ShowModal() => Modal.Show<YourModalComponent>("Shoping basket");
+    // private Checkout purchaseSummary;
+    private bool PopupVisible = false;
     public string name {set;get;} ="";
     string LastSubmitResult ="";
 
+    
+
     public string SelectedOpt { get; set; } = "";
-    string cider;
+    string cider ="";
 
     string selectout {set; get;} ="";
 
@@ -76,7 +107,11 @@
 
     //static string selectedSize {get;set;}
 
+    
+  
+    
     private Dictionary<int, string> selectedSizes = new Dictionary<int, string>();
+    
     
     private Dictionary<int, int> numberOf = new Dictionary<int,int>();
 
@@ -87,7 +122,6 @@
 
     static string houtput2 {set; get;} ="";
 
-    static List<Orderrows> mybuy =  new List<Orderrows>();
     
     static Orders myorder = new Orders();
 
@@ -98,10 +132,6 @@
     [Parameter] public string? Id { get; set; }
 
     public List<Customer> myCust = new List<Customer>();
-
-    public List<Orders> myOrder = new List<Orders>();
-
-    public List<Orderrowstwo> myOrderrows = new List<Orderrowstwo>();
 
     public List<Offer> myoffer = new List<Offer>();
 
@@ -114,7 +144,7 @@
         return insize.Split(';');
     }
 
-    private string sizer;
+    private string sizer ="";
 
 
   void ValidFormSubmitted(EditContext editContext)
@@ -129,16 +159,19 @@
 
   private void OnChange(ChangeEventArgs e)
     {
+        Service.currentCustomer = new Customer();
+        Service.myOrderrows = new List<Orderrows>();
         ValueChanged.InvokeAsync(e.Value.ToString());
         cider= e.Value.ToString()+"";
         houtput = "";
-        houtput2 = "";
+        //houtput2 = "";
 
         // calls DB and search for the names
         myCust=Dbmethods.FindCust(cider); // myCust contains a list of all customers matching search box
         houtput+= "<br>Customers matching " +myCust.Count() +"<br>";
 
-
+        
+        
 
     }
 
@@ -146,6 +179,7 @@
     {
         if (selectedPersonId > 0)
         {
+            Service.currentCustomer = myCust.Find(x => x.customerid == selectedPersonId);
             // myOrders conatin a list of selected customer orders (selectedPersonID is customer id)
             // myOrder =Dbmethods.MyOrders(selectedPersonId);
             myoffer=Dbmethods.OfferProducts();
@@ -168,7 +202,7 @@
         }
         else
         {
-            houtput2 = "";
+            //houtput2 = "";
         }
 
     }
@@ -194,26 +228,30 @@
     protected void Hide4(int prodid, string color)
     {
 
-        if (selectedSizes[prodid] !="")
+        if ((selectedSizes[prodid] !="") && (numberOf[prodid]>0))
         {
             //logics associaded with the buy button 
-
-           houtput2="<br> selected size" +selectedSizes[prodid] +"<br>";
-
+            // `id`, `ordernr (FK order)`, `productid`, 'color', 'size', `quantity`, `price`, `delivquant`
+           houtput2="<br> selected size " +selectedSizes[prodid].ToUpper() +"<br>";
+           Offer item =new Offer();
            Orderrows myitem = new Orderrows();
+           item=myoffer.First( p => p.prodid == prodid);
            myitem.size=selectedSizes[prodid];
            myitem.quantity=numberOf[prodid];
            myitem.productid=prodid;
            myitem.color=color;
+           myitem.price=item.price;
+           
+           
 
-           mybuy.Add(myitem);
+           Service.myOrderrows.Add(myitem);
 
         }
         else
         {
-            houtput2 = "";
+            // houtput2 = "";
         }
     }
-
-
 }
+
+

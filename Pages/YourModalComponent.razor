@@ -1,0 +1,31 @@
+@inherits Blazored.Modal.BlazoredModal
+@inject IModalService Modal
+@inject Service service
+@inject NavigationManager NavigateTo
+
+<div>
+    <p>The following products are in the basket.</p>
+    @foreach (Orderrows a in Service.myOrderrows)
+    {
+        <ul>
+            <li>@a.productid  color: @a.color  size: @a.size.ToUpper() quantity: @a.quantity price/item: @a.price  </li>
+        </ul>
+    }
+    <button @onclick="Close" class="btn btn-primary">Close</button>
+    <button @onclick="NavigateToExitPay"class="btn btn-secondary">Exit and pay</button>
+</div>
+
+@code {
+
+    [CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; } = default!;
+
+    async Task Close() => await BlazoredModal.CloseAsync(ModalResult.Ok("Close"));
+    
+
+    async Task NavigateToExitPay()
+    {
+        await BlazoredModal.CloseAsync(ModalResult.Ok("Pay"));
+        NavigateTo.NavigateTo("exitpay", true);
+    }
+
+}
