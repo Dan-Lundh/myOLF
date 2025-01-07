@@ -13,6 +13,8 @@ builder.Services.AddSingleton<Service>();
 builder.Services.AddBlazoredModal();
 
 
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

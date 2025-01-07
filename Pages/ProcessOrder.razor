@@ -8,12 +8,13 @@
 @inject IModalService modal  
 
 
+
 <PageTitle>Stock</PageTitle>
 
 <h1>Processing undelivered/ orders</h1>
 <p> Select what you want to do in the drop</p>
 
-<select @bind="selectedOrder" @onclick="@getOrderdetails">
+<select title="order" id="order" value="@selectedOrder" @onchange="HandleOrderChange">
     <option value="">select an order to process</option>
     @foreach (var item in unprocessedOrders)
     {
@@ -25,18 +26,22 @@
 The list of the following products should be distributed for delivery:
 <br>
 <br>
-<select @bind="selectedItemId" @onclick="@getStockdetails">
-    <option value="">select item process</option>
-     @foreach (var a in theOrderrows)
+
+<select title="orderrow" id="orderrow" value="@selectedItemId" @onchange="HandleItemChange">
+    <option value="">select item toprocess</option> 
+    @foreach (var a in theOrderrows)
     {
-        <option value="@GetUniqueIdentifier(a.id, a.color, a.size)"> @GetUniqueIdentifier(a.id,a.color,a.size) @a.id @a.quantity of @a.name color: @a.color size: @a.size.ToUpper()  </option>
+        <option value="@GetUniqueIdentifier(a.id, a.color, a.size)"> article: @a.id quantity: @a.quantity of @a.name color: @a.color size: @a.size.ToUpper()  </option>
     }
-</select>
+</select> 
 
 <ul>
- @foreach (var a in stocklist)
+    @foreach (var a in stocklist)
     {
-        <li> @a.productid  @a.name color: @a.color size: @a.size.ToUpper()  place -shelf: @a.shellnr slot: @a.slot in stock: @a.stockquant ordered: @a.orderquant </li>
+        
+        <li @onclick="() => PickFromStock(a)" style="cursor: pointer;"> pid: @a.id name: @a.name color: @a.color size: @a.size.ToUpper() 
+                place - shelf: @a.shellnr slot: @a.slot in stock: @a.stockquant ordered: @a.orderquant delivered:
+        </li>
     }
 </ul>
 
@@ -44,13 +49,30 @@ The list of the following products should be distributed for delivery:
 
     static int selectedOrder;
 
-    private string selectedItemId;
+    static int counter=0;
+
+    public string? selectedItemId;
 
     public static List<Orders> unprocessedOrders = Dbmethods.ProcessMyOrders();
+
+    public static List<int> delivquant = new List<int>();
     
     public static List<Orderrowstwo> theOrderrows = new List<Orderrowstwo>();
 
     public static List<ReportStock> stocklist = new List<ReportStock>();
+
+
+    private void HandleOrderChange(ChangeEventArgs e)
+    {
+        selectedOrder = int.Parse(e.Value.ToString());
+        getOrderdetails();
+    }
+
+    private void HandleItemChange(ChangeEventArgs e)
+    {
+        selectedItemId = e.Value.ToString();
+        getStockdetails();
+    }
 
     private void getOrderdetails()
     {
@@ -63,16 +85,17 @@ The list of the following products should be distributed for delivery:
         string color="";
         string size="";
 
-        
-        string[] theids = selectedItemId.Split('_');
-        if (theids.Count()==3)
-        {
-            id=int.Parse(theids[0]);
-            color=theids[1];
-            size=theids[2];
-            stocklist=Dbmethods.StockItems(selectedOrder, id, color, size);
-        }
+        if (selectedItemId.Length > 3) {
+            string[] theids = selectedItemId.Split("_");
+            if (theids.Count()==3)
+            {
+                id=int.Parse(theids[0]);
+                color=theids[1];
+                size=theids[2];
+                stocklist=Dbmethods.StockItems(selectedOrder, id, color, size);
+            }
 
+        }
     }
 
     public string GetUniqueIdentifier(int id, string c, string s)
@@ -81,4 +104,19 @@ The list of the following products should be distributed for delivery:
         return $"{id}_{c}_{s}";
     }
 
+    private void PickFromStock(ReportStock selectedItem)
+    {
+        
+
+        // Decrease stock quantity by 1
+        if (selectedItem.stockquant - selectedItem.orderquant > 0)
+        {
+            selectedItem.stockquant -= 1;
+            Console.WriteLine($"Picked 1 item from {selectedItem.shellnr} - Remaining stock: {selectedItem.stockquant}");
+        }
+        else
+        {
+            Console.WriteLine($"No stock left at {selectedItem.shellnr}.");
+        }
+    }
 }

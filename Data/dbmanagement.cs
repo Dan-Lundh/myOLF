@@ -113,14 +113,23 @@ public class Dbmethods
 
     static public List<ReportStock> StockItems(int myorder, int pid, string cid, string sid)
     {
-        var sql = "SELECT products.id, orderrows.ordernr, combo.color, combo.size, products.name, inhouse.shellnr, inhouse.slot, orders.status, orderrows.quantity AS OQ, inhouse.quantity AS IQ " + 
+        var sql = "SELECT products.id, orderrows.ordernr, combo.color, combo.size, products.name, inhouse.shellnr, inhouse.slot, orders.status, orderrows.quantity AS orderquant, inhouse.quantity AS stockquant " + 
         "FROM orders INNER JOIN orderrows ON orderrows.ordernr=orders.id " +
         "INNER JOIN products ON orderrows.productid = products.id "+
         "INNER JOIN combo ON combo.prodid=orderrows.productid AND combo.color=orderrows.color AND combo.size=orderrows.size "+
         "INNER JOIN inhouse ON combo.prodid=inhouse.prodid AND combo.color = inhouse.color AND combo.size=inhouse.size "+
-        "WHERE AND ((inhouse.quantity - orderrows.quantity) > inhouse.orderpoint) AND (orderrows.ordernr=" +myorder +") AND "+pid +"=products.id AND combo.color="+cid+" AND color.size="+sid+ ");";
+        "WHERE ((inhouse.quantity - orderrows.quantity) > inhouse.orderpoint) AND (orderrows.ordernr=" +myorder +") AND "+pid +"=products.id AND combo.color=\""+cid+"\" AND combo.size=\""+sid+ "\";";
+        Console.WriteLine(sql);
         var myorderrows = db.Query<ReportStock>(sql).ToList();
+        
         return myorderrows; 
+    }
+
+    static public void UpdateInhouse(ReportStock mystocrow)
+    {
+        var sql = "UPDATE inhouse " +
+        "SET inhouse.quantity = mystock.quantity-orderrows.quantity " +
+        "WHERE inhouse.prodid = " + mystocrow.id + " ";
     }
 
     static public List<ReportStock> LowStockItems(int myorder)

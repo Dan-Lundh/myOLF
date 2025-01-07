@@ -45,7 +45,7 @@ public class Orderrows
 
 public class ReportStock
 {
-    public int productid {set; get;}
+    public int id {set; get;}
     public int ordernr {set;get;}
     public string color {get;set;} ="";
     public string size {get;set;} ="";
