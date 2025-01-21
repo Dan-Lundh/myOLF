@@ -111,12 +111,15 @@ The list of the following products should be distributed for delivery:
         // Decrease stock quantity by 1
         if (selectedItem.stockquant - selectedItem.orderquant > 0)
         {
-            selectedItem.stockquant -= 1;
+            // updating the row update the DB 
+            selectedItem.stockquant -= 1; 
+             
             Console.WriteLine($"Picked 1 item from {selectedItem.shellnr} - Remaining stock: {selectedItem.stockquant}");
         }
         else
         {
             Console.WriteLine($"No stock left at {selectedItem.shellnr}.");
+            // put this in separate window
         }
     }
 }

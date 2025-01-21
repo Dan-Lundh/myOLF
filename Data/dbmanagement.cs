@@ -126,10 +126,11 @@ public class Dbmethods
     }
 
     static public void UpdateInhouse(ReportStock mystocrow)
-    {
-        var sql = "UPDATE inhouse " +
-        "SET inhouse.quantity = mystock.quantity-orderrows.quantity " +
-        "WHERE inhouse.prodid = " + mystocrow.id + " ";
+    {   
+        // update in stock when picking the order - something like below
+        //var sql = "UPDATE inhouse " +
+        //"SET inhouse.quantity = mystock.quantity-orderrows.quantity " +
+        // "WHERE inhouse.prodid = " + mystocrow.id + " ";
     }
 
     static public List<ReportStock> LowStockItems(int myorder)
